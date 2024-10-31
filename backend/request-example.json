@@ -1,0 +1,240 @@
+{
+    *"nombreEncuestador": "Steve job 1",
+    *"fechaEncuesta": "2024-09-28",
+    *"horaInicioEncuesta": "08:30",
+    *"horaFinEncuesta": "09:30",
+    *"nombreSupervisorEncuestador": "Ana Gómez",
+    *"identificacion": "1234567890",
+    *"nombreApellido": "Carlos López",
+    *"sexo": "M",
+    *"edad": "35",
+    *"direccion": "Finca El Roble, Vereda El Llano",
+    *"barrio": "El Carmen",
+    *"municipio": "Medellín",
+    *"telefono": "3001234567",
+    *"organizacionComunitariaProyecto": "S",
+    *"cualOrganizacionComunitariaProyecto": "Junta de Acción Comunal",
+    // --
+    *"totalPersonasVivienda": 5,
+    *"totalFamiliasVivienda": 1,
+    *"miembrosFamilia": [
+        {
+            *"nombresApellidos": "Ana 1",
+            *"sexo": "M",
+            *"edad": 30,
+            *"tipoEdad": "A",
+            *"estadoCivil": 1,
+            *"parentesco": 1,
+            *"ocupacion": 1,
+            *"aportaIngresos": 1,
+            *"nivelEscolaridad": 4,
+            *"tipoAfiliacionSalud": 3,
+            *"grupoAtencionEspecial": 2,
+            *"discapacidad": 7
+        },
+        {
+            "nombresApellidos": "Ana 2",
+            "sexo": "M",
+            "edad": 30,
+            "tipoEdad": "A",
+            "estadoCivil": 1,
+            "parentesco": 1,
+            "ocupacion": 1,
+            "aportaIngresos": 1,
+            "nivelEscolaridad": 4,
+            "tipoAfiliacionSalud": 3,
+            "grupoAtencionEspecial": 2,
+            "discapacidad": 7
+        }
+    ],
+    *"haRecibidoAyuda": "N",
+    *"nombreAyudaOrganizacion": null,
+    *"tipoAyuda": null,
+    *"principalNecesidad": "Mejorar la vivienda",
+    *"haSidoDesplazado": "S",
+    *"haceCuantoTiempoDesplazado": "2 años",
+    *"lugarDeDesplazado": "Cauca",
+    *"deseaVolverAlSitioDeDesplazado": "N",
+    *"porqueSiNoDesea": "Inseguridad",
+    *"haSidoRechazadoDespuesDeDesplazado": "N",
+    *"desplazamiento": [
+        {
+            "estanUnidos": 1,
+            "desintegroFamilia": 0,
+            "problemasFamiliares": 1,
+            "ningunCambio": 0
+        }
+    ],
+    *"afectadoConsecuenciaDesplazamiento": 4,
+    *"haSidoPositivoElDesplazamiento": 2,
+    *"tiempoCasa": [
+        {
+            "sala": 2,
+            "cocina": 1,
+            "habitacion": 3,
+            "especifique": 1,
+            "especifiqueOtro": "Patio"
+        }
+    ],
+    *"comoConsumenLosAlimentos": 2,
+    *"maltratoViolenciaEnLaFamilia": "N",
+    *"haPedidoAyudaDenunciado": null,
+    *"haPedidoAyudaDenunciadoPorQue": null,
+    *"decisionesImportantesEnFamilia": 1,
+    *"decisionesFamilia": "Padres",
+    *"seSienteAgustoEnLaVivienda": "S",
+    *"seSienteAgustoEnLaViviendaPorQue": "Por la tranquilidad",
+    *"necesitaCapacitarse": "S",
+    *"necesitaCapacitarseEspecifique": "En agricultura",
+    *"emprenderNegocio": "S",
+    *"emprenderNegocioEspecifique": "Producción de café",
+    *"condicionesDeVida": 3,
+    "conviven": [
+        {
+            *"fumaCigarrillo": "N",
+            *"consumeLicor": "S"
+        }
+    ],
+    *"consumeMedicamentos": "N",
+    *"tiempoLibre": [
+        {
+            *"reunionesFamiliares": "S",
+            *"paseos": "S",
+            *"practicarDeporte": "N",
+            *"otro": "S",
+            *"especifiqueOtro": "Ir al cine"
+        }
+    ],
+    *"viviendaOcupada": 1,
+    *"viviendaOcupadaEspecifique": "Propia",
+    *"loteViviendaLegal": "S",
+    *"estratoVivienda": 2,
+    *"realizaTrabajoNegocioEnVivienda": "N",
+    *"realizaTrabajoNegocioEnViviendaCual": null,
+    *"ingresosMensualesPromedio": 1200000,
+    *"gastosMensualesServicios": "200000",
+    *"accesoVivienda": [
+        {
+            "medioTransporte": "S",
+            "centroSociales": "N",
+            "parques": "S"
+        }
+    ],
+    *"tiempoDesplazamiento": [
+        {
+            "apie": "S",
+            "bicicleta": "N",
+            "vehiculoMotorizado": "S",
+            "caballo": "N",
+            "otro": "N",
+            "especifiqueOtro": "Transporte público",
+            "noAplica": "N"
+        }
+    ],
+    *"sitioPreparaAlimientos": 1,
+    *"combustibleCocina": [
+        {
+            "electri-cidad": "S",
+            "gasP-ropano": "N",
+            "gas-Natural": "S",
+            "le-na": "N",
+            "otro": "N",
+            "pet-roleo": "S",
+            "carbonMi-neral": "N",
+            "mate-riales": "N"
+        }
+    ],
+    *"servicioSanitario": 1,
+    *"serviciosBasicos": [
+        {
+            "energiaElectrica": "S",
+            "gasTuberia": "N",
+            "acueducto": "S",
+            "alcantarillado": "S",
+            "telefono": "N",
+            "aseo": "S"
+        }
+    ],
+    *"conformeConServicios": "S",
+    *"conformeConServiciosEspecifique": "Satisfactorios",
+    *"fuenteAguaVivienda": 1,
+    *"fuenteAguaViviendaEspecifique": null,
+    *"obtieneAguaFormaRegular": 1,
+    *"lavanFrutasVerduras": "S",
+    *"enciendenVelasVelones": "N",
+    *"humoDentroVivienda": "N",
+    *"accidentadoEnVivienda": "N",
+    *"tipoVivienda": 1,
+    *"viviendaAutoConstruida": "N",
+    *"topografiaTerreno": [
+        {
+            "plano": "N",
+            "ladera": "N",
+            "relleno": "N",
+            "irregular": "N",
+            "inundable": "N",
+            "desplazamiento": "N"
+        }
+    ],
+    *"lugaresVivienda": [
+        {
+            "terrenoBaldios": 1,
+            "plagas": 0,
+            "industria": 1,
+            "porquerizas": 0,
+            "malosOlores": 1,
+            "rellenos": 0,
+            "contaminacionAuditiva": 1,
+            "contaminacionVisual": 0,
+            "rio": 1,
+            "especifique": 0,
+            "especifiqueOtro": "Contaminación por desechos"
+        }
+    ],
+    *"zonasRecreativas": "S",
+    *"materialPredominantePiso": "Cemento",
+    *"materialPredominanteParedes": 1,
+    *"materialPredominanteParedesEspecifique": null,
+    *"materialPredominanteTecho": 1,
+    *"ambientesSeparados": [
+        {
+            "cocina": "S",
+            "dormitorioAdulto": "N",
+            "sala": "S",
+            "dormitorioNinos": "S",
+            "sanitario": "S",
+            "lavadero": "N"
+        }
+    ],
+    *"numeroCuartosHogar": 3,
+    *"duermenVivienda": [
+        {
+            "cama": "S",
+            "estera": "N",
+            "camasinColchon": "S",
+            "hamaca": "NA",
+            "colchon": "S",
+            "otro": "S",
+            "cualOtro": "Futón"
+        }
+    ],
+    *"numeroCamasVivienda": 3,
+    *"elementosCasa": [
+        {
+            "lavamanos": "S",
+            "lavaplatos": "N",
+            "lavaRopa": "S"
+        }
+    ],
+    *"lugarDisponenExcretas": 1,
+    "numeroSanitariosHogar": 1,
+    "lugarSanitario": "Dentro de la casa",
+    "lavamanosCercaSanitario": "S",
+    "recogenBasura": 1,
+    "nombreCompletoSeguimientoHogar": "Laura Mendoza",
+    "direccionViviendaSeguimientoHogar": "Finca La Pradera, Vereda El Roble",
+    "telefonoViviendaSeguimientoHogar": "3009876543",
+    "observacionesEncuestador": "N/A",
+    "autorizacionTratamientoDatos": "N",
+    "autorizacionUsoImagen": "N"
+}
