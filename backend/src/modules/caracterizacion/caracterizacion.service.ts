@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Caracterizacion } from './entities/caracterizacion.entity';
@@ -39,11 +39,17 @@ export class CaracterizacionService {
   }
 
   // consultar uno por documento identidad
-  findOne(identificacion: string): Promise<Caracterizacion> {
-    return this.caracterizacionRepository.findOne({
+  async findOne(identificacion: string): Promise<Caracterizacion> {
+    const identi = await this.caracterizacionRepository.findOne({
       where: { identificacion }
       , relations: ['miembrosFamilia']
     });
+
+    if ( !identi ) {
+      throw new NotFoundException(`No se encontró un beneficiario con identificación ${ identificacion }`);
+    }
+    
+    return identi;
   }
 
   // Actualizar

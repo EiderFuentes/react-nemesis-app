@@ -12,6 +12,7 @@ import {
   cilPuzzle,
   cilSpeedometer,
   cilStar,
+  cilList,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -173,11 +174,12 @@ const _nav = [
         to: '/forms/form-control',
         icon: <CIcon icon={cilPencil} customClassName="nav-icon" />,
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Select',
-      //   to: '/forms/select',
-      // },
+      {
+        component: CNavItem,
+        name: 'Consultar',
+        to: '/forms/form-consultar',
+        icon: <CIcon icon={cilList} customClassName="nav-icon" />
+      },
       // {
       //   component: CNavItem,
       //   name: 'Checks & Radios',
