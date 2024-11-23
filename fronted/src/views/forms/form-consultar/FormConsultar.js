@@ -22,12 +22,12 @@ import axios from 'axios'
 import { initialFormData } from '../form-control/initialFormData'
 
 const FormConsultar = () => {
+
   const [identificacion, setIdentificacion] = useState('')
 
   // Estado para almacenar el resto de los datos del formulario
   const [formData, setFormData] = useState(initialFormData)
 
-  const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
 
   const handleInputChange = (e) => {
@@ -37,15 +37,18 @@ const FormConsultar = () => {
   const handleSearch = async (e) => {
     e.preventDefault()
     setError(null)
-    setUser(null)
+    setFormData(null)
+
 
     try {
-      const response = await axios.get(
-        `http://localhost:3001/caracterizacion/identificacion/${identificacion}`,
-      )
-      setUser(response.data)
+      const respose = await axios.get( `http://localhost:3001/caracterizacion/${ identificacion }` );
+      console.log('===================================');
+      console.log('Se muestran los datos del beneficiario');
+      console.log(respose);
+      console.log('===================================');
+      setFormData(respose.data)
     } catch (err) {
-      setError('No se encontró el beneficiario con la identificación proporcionada.')
+      setError('No se encontró el beneficiario con la identificación proporcionada')
     }
   }
 
@@ -82,25 +85,39 @@ const FormConsultar = () => {
                         </CButton>
                       </CCol>
                     </CRow>
+                    <CRow className="mb-3">
+                    <CCol md={6}>
+                      {error && <CAlert color="danger">{error}</CAlert>}
+
+                      {formData && (
+                        <div style={{ marginTop: '20px' }}>
+                          <h3>Información del Beneficiario:</h3>
+                          <p>
+                            <strong>Numero:</strong> {formData.id}
+                          </p>
+                          <p>
+                            <strong>Nombre Encuentador:</strong> {formData.nombreEncuestador}
+                          </p>
+                          <p>
+                            <strong>Fecha:</strong> {formData.fechaEncuesta}
+                          </p>
+                          <p>
+                          <strong>Identificacion:</strong> {formData.identificacion}
+                          </p>
+                          <p>
+                          <strong>Nombre Beneficiario:</strong> {formData.nombreApellido}
+                          </p>
+                        </div>
+                      )}
+                    </CCol>
+                    <CCol md={6}>
+
+                    </CCol>
+                    </CRow>
                   </CAccordionBody>
                 </CAccordionItem>
               </CAccordion>
             </CForm>
-
-            {error && <CAlert color="danger">{error}</CAlert>}
-
-            {user && (
-              <div style={{ marginTop: '20px' }}>
-                <h6>Información del Beneficiario:</h6>
-                <p>
-                  <strong>Nombre Encuentador:</strong> {user.nombreEncuestador}
-                </p>
-                <p>
-                  <strong>Fecha:</strong> {user.fechaEncuesta}
-                </p>
-                {/* Agrega otros campos según la estructura de tu entidad de usuario */}
-              </div>
-            )}
           </CCardBody>
         </CCard>
       </CCol>

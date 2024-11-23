@@ -56,7 +56,7 @@ export class CaracterizacionService {
      
     //---------- Inicio pregunta 15 -------------
     params.miembrosFamilia = params.miembrosFamilia[0];
-    delete params.miembrosFamilia.id;
+    //delete params.miembrosFamilia.id;
     //---------- Fin pregunta 15 ----------------
 
     //---------- Inicio pregunta 31 -------------
@@ -109,6 +109,7 @@ export class CaracterizacionService {
     //---------- Inicio pregunta 55 -------------
     params.combustibleCocina = params.combustibleCocina[0];
     delete params.combustibleCocina.id;
+    delete params.combustibleCocina.otro;
     //---------- Fin pregunta 55 -------------
 
     //---------- Inicio pregunta 57 -------------
@@ -136,13 +137,6 @@ export class CaracterizacionService {
     params.ambientesSeparados = params.ambientesSeparados[0];
     let { cocina: cocina_73, dormitorioAdulto: dormitorioAdulto_73, sala: sala_73, 
        dormitorioNinos: dormitorioNinos_73, sanitario: sanitario_73, lavadero: lavadero_73 } = params.ambientesSeparados;
-    // delete params.ambientesSeparados.id;
-    // delete params.ambientesSeparados.cocina;
-    // delete params.ambientesSeparados.dormitorioAdulto;
-    // delete params.ambientesSeparados.sala;
-    // delete params.ambientesSeparados.dormitorioNinos;
-    // delete params.ambientesSeparados.sanitario;
-    // delete params.ambientesSeparados.lavadero;
     delete params.ambientesSeparados;
     params = {...params, cocina_73, dormitorioAdulto_73, sala_73, dormitorioNinos_73, sanitario_73, lavadero_73 };
     //---------- Fin pregunta 73 -------------
@@ -160,7 +154,6 @@ export class CaracterizacionService {
     //---------- Inicio pregunta 77 -------------
     params.elementosCasa = params.elementosCasa[0];
     let { lavamanos: lavamanos_77, lavaplatos: lavaplatos_77, lavaRopa: lavaRopa_77 } = params.elementosCasa;
-    //delete params.elementosCasa.id;
     delete params.elementosCasa;
     params = {...params, lavamanos_77, lavaplatos_77, lavaRopa_77 }
     //---------- Fin pregunta 77 -------------
