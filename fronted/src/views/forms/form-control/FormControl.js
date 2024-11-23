@@ -24,7 +24,7 @@ import { initialFormData } from './initialFormData';
 import './styles.css';
 
 
-const FormControl = () => {
+const FormControl = ({ readOnly = false, initialValues = {} }) => {
   // Estado para almacenar el número de personas en la vivienda
   const [totalPersonas, setTotalPersonas] = useState(0);
 
@@ -94,6 +94,7 @@ const FormControl = () => {
       ...formData,
       miembrosFamilia
     };
+    if (readOnly) return;
     try {
       setMensajeError([]);
       const datosApi = paramsApi(dataToSave);
@@ -119,7 +120,7 @@ const FormControl = () => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-            <strong>Registro</strong>
+          <strong>{ readOnly ? 'Información del Beneficiario' : 'Registro' }</strong>
           </CCardHeader>
           {mensajeError.length > 0 && (
             mensajeError.map((mensaje, index) => (
@@ -2314,7 +2315,7 @@ const FormControl = () => {
 				        </CAccordionBody>
                 </CAccordionItem>
               </CAccordion>
-              <CButton color="primary" onClick={handleSave}>
+              <CButton color="primary" onClick={ !readOnly ? handleSave : undefined }>
                 Guardar
               </CButton>
             </CForm>

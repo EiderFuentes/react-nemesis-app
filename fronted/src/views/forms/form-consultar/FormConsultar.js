@@ -20,6 +20,7 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import { initialFormData } from '../form-control/initialFormData'
+import FormControl from '../form-control/FormControl';
 
 const FormConsultar = () => {
 
@@ -46,7 +47,7 @@ const FormConsultar = () => {
       console.log('Se muestran los datos del beneficiario');
       console.log(respose);
       console.log('===================================');
-      setFormData(respose.data)
+      setFormData(respose.data);
     } catch (err) {
       setError('No se encontró el beneficiario con la identificación proporcionada')
     }
@@ -86,31 +87,13 @@ const FormConsultar = () => {
                       </CCol>
                     </CRow>
                     <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={12}>
                       {error && <CAlert color="danger">{error}</CAlert>}
 
+                      {/* Uso el Componente Ingresar dentro del Componente Consultar */}
                       {formData && (
-                        <div style={{ marginTop: '20px' }}>
-                          <h3>Información del Beneficiario:</h3>
-                          <p>
-                            <strong>Numero:</strong> {formData.id}
-                          </p>
-                          <p>
-                            <strong>Nombre Encuentador:</strong> {formData.nombreEncuestador}
-                          </p>
-                          <p>
-                            <strong>Fecha:</strong> {formData.fechaEncuesta}
-                          </p>
-                          <p>
-                          <strong>Identificacion:</strong> {formData.identificacion}
-                          </p>
-                          <p>
-                          <strong>Nombre Beneficiario:</strong> {formData.nombreApellido}
-                          </p>
-                        </div>
+                        <FormControl readOnly={true} initialValues={formData} />
                       )}
-                    </CCol>
-                    <CCol md={6}>
 
                     </CCol>
                     </CRow>
