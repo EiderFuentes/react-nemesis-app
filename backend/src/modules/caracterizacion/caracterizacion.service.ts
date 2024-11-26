@@ -55,7 +55,7 @@ export class CaracterizacionService {
     let params = JSON.parse(JSON.stringify(response));
      
     //---------- Inicio pregunta 15 -------------
-    params.miembrosFamilia = params.miembrosFamilia[0];
+    // params.miembrosFamilia = params.miembrosFamilia[0];
     //delete params.miembrosFamilia.id;
     //---------- Fin pregunta 15 ----------------
 

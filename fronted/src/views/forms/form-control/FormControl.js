@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CButton,
   CCard,
@@ -16,43 +16,57 @@ import {
   CAccordionBody,
   CFormSelect,
   CFormCheck,
-  CAlert
+  CAlert,
 } from '@coreui/react'
-import axios from 'axios';
-import { paramsApi } from './paramsApi';
-import { initialFormData } from './initialFormData';
-import './styles.css';
+import axios from 'axios'
+import { paramsApi } from './paramsApi'
+import { initialFormData } from './initialFormData'
+import './styles.css'
+import { FaSave } from 'react-icons/fa';
 
-
-const FormControl = ({ readOnly = false, initialValues = {} }) => {
+const FormControl = ({ modeReadOnly, modeData, isReadOnly = false, isSaveDisabled }) => {
   // Estado para almacenar el número de personas en la vivienda
-  const [totalPersonas, setTotalPersonas] = useState(0);
-
-
-  const [mensajeError, setMensajeError] = useState([]);
-
+  const [totalPersonas, setTotalPersonas] = useState(0)
+  const [mensajeError, setMensajeError] = useState([])
+  const [modeRead, setModeRead] = useState(false)
   // Estado para almacenar la información de cada persona
-  const [miembrosFamilia, setMiembrosFamilia] = useState([]);
-
+  const [miembrosFamilia, setMiembrosFamilia] = useState([])
   // Estado para almacenar el resto de los datos del formulario
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState(initialFormData)
+
+  // const [message, setMessage] = useState('');
+
+
+  // Efecto para inicializar el estado con la prop
+  useEffect(() => {
+    if (modeData && modeData !== undefined) {
+      setFormData(modeData)
+      if (modeReadOnly) {
+        setModeRead(true)
+      }
+      if (modeData.miembrosFamilia) {
+        setMiembrosFamilia(modeData.miembrosFamilia)
+        setTotalPersonas(modeData.miembrosFamilia.length)
+      }
+    }
+  }, [modeData]) // Se ejecuta cada vez que cambie `modeData`
 
   const handleCheckboxChange = (e, groupName) => {
-    const { name, checked } = e.target;
+    const { name, checked } = e.target
     setFormData((prevState) => ({
       ...prevState,
       [groupName]: {
         ...prevState[groupName],
-        [name]: checked ? 'S' : 'N' // Almacena 'S' si está marcado y 'N' si no lo está.
-      }
-    }));
-  };
+        [name]: checked ? 'S' : 'N', // Almacena 'S' si está marcado y 'N' si no lo está.
+      },
+    }))
+  }
 
   // Función que maneja el cambio en el campo totalPersonasVivienda
   const handleTotalPersonasChange = (e) => {
-    handleFormChange(e);
-    const total = parseInt(e.target.value) || 0;
-    setTotalPersonas(total);
+    handleFormChange(e)
+    const total = parseInt(e.target.value) || 0
+    setTotalPersonas(total)
 
     // Crear un array de personas con valores iniciales
     const nuevaPersonas = Array.from({ length: total }, (_, i) => ({
@@ -67,68 +81,89 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
       nivelEscolaridad: '',
       tipoAfiliacionSalud: '',
       grupoAtencionEspecial: '',
-      discapacidad: ''
-    }));
-    setMiembrosFamilia(nuevaPersonas);
-  };
+      discapacidad: '',
+    }))
+    setMiembrosFamilia(nuevaPersonas)
+  }
 
   // Función que maneja el cambio en los campos de cada persona
   const handlePersonaChange = (index, campo, valor) => {
-    const nuevasPersonas = [...miembrosFamilia];
-    nuevasPersonas[index][campo] = valor;
-    setMiembrosFamilia(nuevasPersonas);
-  };
+    const nuevasPersonas = [...miembrosFamilia]
+    nuevasPersonas[index][campo] = valor
+    setMiembrosFamilia(nuevasPersonas)
+  }
 
   // Función para manejar los cambios en los campos del formulario
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [name]: value
-    });
-  };
+      [name]: value,
+    })
+  }
 
   // Función para guardar los datos al presionar el botón "Guardar"
   const handleSave = async () => {
     const dataToSave = {
       ...formData,
-      miembrosFamilia
-    };
-    if (readOnly) return;
-    try {
-      setMensajeError([]);
-      const datosApi = paramsApi(dataToSave);
-      //console.log(datosApi);
-      const { status, data, response } = await axios.post('http://localhost:3001/caracterizacion', datosApi)
-      console.log('===================================');
-      console.log('Se guardaron los datos');
-      console.log(status);
-      console.log('===================================');
-    } catch (e) {
-      const { status, response: { data: { message } } } = e;
-      setMensajeError(message);
-      console.log('-----------------------------------------------');
-      console.log('ERROR GUARDANDO LOS DATOS');
-      console.log(status);
-      console.log(message);
-      console.log('-----------------------------------------------');
+      miembrosFamilia,
     }
-  };
+    if (modeRead) return
+    try {
+      setMensajeError([])
+      const datosApi = paramsApi(dataToSave)
+      //console.log(datosApi);
+      const { status, data, response } = await axios.post(
+        'http://localhost:3001/caracterizacion',
+        datosApi,
+      )
+      console.log('===================================')
+      console.log('Se guardaron los datos')
+      console.log(status)
+      console.log('===================================')
+
+      // setMessage('Datos guardados con éxito');
+
+      // Limpia los campos del formulario
+      // setFormData(initialFormData);
+      // setTotalPersonas(0);
+      // setMiembrosFamilia([]);
+      // setFormData([]);
+
+      // Oculta el mensaje después de 3 segundos
+    //  setTimeout(() => {
+    //   setMessage('');
+    // }, 3000);
+
+    } catch (e) {
+      const {
+        status,
+        response: {
+          data: { message },
+        },
+      } = e
+      setMensajeError(message)
+      console.log('-----------------------------------------------')
+      console.log('ERROR GUARDANDO LOS DATOS')
+      console.log(status)
+      console.log(message)
+      console.log('-----------------------------------------------')
+    }
+  }
 
   return (
     <CRow>
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardHeader>
-          <strong>{ readOnly ? 'Información del Beneficiario' : 'Registro' }</strong>
+            <strong>{modeRead ? 'Información del Beneficiario' : 'Registro'}</strong>
           </CCardHeader>
-          {mensajeError.length > 0 && (
+          {mensajeError.length > 0 &&
             mensajeError.map((mensaje, index) => (
               <CAlert key={index} color="danger" dismissible>
                 <strong>{mensaje}</strong>
               </CAlert>
-            ))
-          )}
+            ))}
           <CCardBody>
             <CForm>
               <CAccordion>
@@ -137,7 +172,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                   <CAccordionBody>
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="nombreEncuestador" className="required-label">1. Nombre del Encuestador</CFormLabel>
+                        <CFormLabel htmlFor="nombreEncuestador" className="required-label">
+                          1. Nombre del Encuestador
+                        </CFormLabel>
                         <CFormInput
                           type="text"
                           id="nombreEncuestador"
@@ -146,16 +183,20 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           value={formData.nombreEncuestador}
                           onChange={handleFormChange}
                           required
+                          readOnly={modeRead}
                         />
                       </CCol>
                       <CCol md={6}>
-                        <CFormLabel htmlFor="fechaEncuesta" className="required-label">2. Fecha de la Encuesta</CFormLabel>
+                        <CFormLabel htmlFor="fechaEncuesta" className="required-label">
+                          2. Fecha de la Encuesta
+                        </CFormLabel>
                         <CFormInput
                           type="date"
                           id="fechaEncuesta"
                           name="fechaEncuesta"
                           value={formData.fechaEncuesta}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -168,6 +209,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="horaInicioEncuesta"
                           value={formData.horaInicioEncuesta}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                       <CCol md={4}>
@@ -178,10 +220,13 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="horaFinEncuesta"
                           value={formData.horaFinEncuesta}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                       <CCol md={6}>
-                        <CFormLabel htmlFor="nombreSupervisorEncuestador">Nombre del Supervisor</CFormLabel>
+                        <CFormLabel htmlFor="nombreSupervisorEncuestador">
+                          Nombre del Supervisor
+                        </CFormLabel>
                         <CFormInput
                           type="text"
                           id="nombreSupervisorEncuestador"
@@ -189,6 +234,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           placeholder="Ingresa el nombre del supervisor"
                           value={formData.nombreSupervisorEncuestador}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -204,32 +250,45 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* <CForm> */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="identificacion" className="required-label">5. Identificación</CFormLabel>
+                              <CFormLabel htmlFor="identificacion" className="required-label">
+                                5. Identificación
+                              </CFormLabel>
                               <CFormInput
-                                type="text" id="identificacion"
-                                name='identificacion'
+                                type="text"
+                                id="identificacion"
+                                name="identificacion"
                                 placeholder="Ingresa tu identificación"
                                 value={formData.identificacion}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="nombreApellido" className="required-label">6. Nombres y apellidos encuestado(a) </CFormLabel>
+                              <CFormLabel htmlFor="nombreApellido" className="required-label">
+                                6. Nombres y apellidos encuestado(a){' '}
+                              </CFormLabel>
                               <CFormInput
-                                type="text" id="nombreApellido"
-                                name='nombreApellido'
+                                type="text"
+                                id="nombreApellido"
+                                name="nombreApellido"
                                 placeholder="Ingresa tu nombre y apellido"
                                 value={formData.nombreApellido}
-                                onChange={handleFormChange} />
+                                onChange={handleFormChange}
+                                readOnly={modeRead}
+                              />
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="sexo" className="required-label">7. Sexo</CFormLabel>
-                              <CFormSelect id="sexo"
+                              <CFormLabel htmlFor="sexo" className="required-label">
+                                7. Sexo
+                              </CFormLabel>
+                              <CFormSelect
+                                id="sexo"
                                 name="sexo"
                                 value={formData.sexo}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione opción</option>
                                 <option value="F">Femenino</option>
@@ -237,63 +296,96 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="edad" className="required-label">8. Edad</CFormLabel>
-                              <CFormInput type="number"
-                                name='edad'
-                                id="edad" placeholder="Ingresa tu edad"
+                              <CFormLabel htmlFor="edad" className="required-label">
+                                8. Edad
+                              </CFormLabel>
+                              <CFormInput
+                                type="number"
+                                name="edad"
+                                id="edad"
+                                placeholder="Ingresa tu edad"
                                 value={formData.edad}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="direccion" className="required-label">9. Dirección (o nombre de finca o vereda)</CFormLabel>
-                              <CFormInput type="text" id="direccion"
-                                name='direccion'
+                              <CFormLabel htmlFor="direccion" className="required-label">
+                                9. Dirección (o nombre de finca o vereda)
+                              </CFormLabel>
+                              <CFormInput
+                                type="text"
+                                id="direccion"
+                                name="direccion"
                                 placeholder="Ingresa tu dirección"
                                 value={formData.direccion}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="barrio" className="required-label">10. Barrio</CFormLabel>
-                              <CFormInput type="text" id="barrio"
-                                name='barrio'
+                              <CFormLabel htmlFor="barrio" className="required-label">
+                                10. Barrio
+                              </CFormLabel>
+                              <CFormInput
+                                type="text"
+                                id="barrio"
+                                name="barrio"
                                 placeholder="Ingresa tu barrio"
                                 value={formData.barrio}
-                                onChange={handleFormChange} />
+                                onChange={handleFormChange}
+                                readOnly={modeRead}
+                              />
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="municipio" className="required-label">Municipio</CFormLabel>
-                              <CFormInput type="text" id="municipio"
+                              <CFormLabel htmlFor="municipio" className="required-label">
+                                Municipio
+                              </CFormLabel>
+                              <CFormInput
+                                type="text"
+                                id="municipio"
                                 placeholder="Ingresa tu municipio"
-                                name='municipio'
+                                name="municipio"
                                 value={formData.municipio}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="telefono" className="required-label">11. Teléfono</CFormLabel>
-                              <CFormInput type="text" id="telefono"
+                              <CFormLabel htmlFor="telefono" className="required-label">
+                                11. Teléfono
+                              </CFormLabel>
+                              <CFormInput
+                                type="text"
+                                id="telefono"
                                 placeholder="Ingresa tu teléfono"
-                                name='telefono'
+                                name="telefono"
                                 value={formData.telefono}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="organizacionComunitariaProyecto" className="required-label">
-                                12. ¿Usted o su familia pertenecen a alguna organización comunitaria y/o participan en algun proyecto comunitario especifico?
+                              <CFormLabel
+                                htmlFor="organizacionComunitariaProyecto"
+                                className="required-label"
+                              >
+                                12. ¿Usted o su familia pertenecen a alguna organización comunitaria
+                                y/o participan en algun proyecto comunitario especifico?
                               </CFormLabel>
-                              <CFormSelect id="organizacionComunitariaProyecto"
-                                name='organizacionComunitariaProyecto'
+                              <CFormSelect
+                                id="organizacionComunitariaProyecto"
+                                name="organizacionComunitariaProyecto"
                                 value={formData.organizacionComunitariaProyecto}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -305,11 +397,12 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               </CFormLabel>
                               <CFormInput
                                 type="text"
-                                name='cualOrganizacionComunitariaProyecto'
+                                name="cualOrganizacionComunitariaProyecto"
                                 id="cualOrganizacionComunitariaProyecto"
                                 placeholder="Ingresa el nombre de la organización"
                                 value={formData.cualOrganizacionComunitariaProyecto}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
@@ -321,7 +414,12 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                         <CAccordionBody>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="totalPersonasVivienda" className="required-label">13. ¿Cuantas personas viven en la Vivienda?</CFormLabel>
+                              <CFormLabel
+                                htmlFor="totalPersonasVivienda"
+                                className="required-label"
+                              >
+                                13. ¿Cuantas personas viven en la Vivienda?
+                              </CFormLabel>
                               <CFormInput
                                 type="number"
                                 id="totalPersonasVivienda"
@@ -329,10 +427,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 placeholder="Ingresa el total de personas"
                                 value={totalPersonas}
                                 onChange={handleTotalPersonasChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="totalFamiliasVivienda" className="required-label">14. ¿Cuántas familias residen de manera habitual la Vivienda?</CFormLabel>
+                              <CFormLabel
+                                htmlFor="totalFamiliasVivienda"
+                                className="required-label"
+                              >
+                                14. ¿Cuántas familias residen de manera habitual la Vivienda?
+                              </CFormLabel>
                               <CFormInput
                                 type="number"
                                 id="totalFamiliasVivienda"
@@ -340,11 +444,11 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 placeholder="Ingresa el total de familias"
                                 value={formData.totalFamiliasVivienda}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
                         </CAccordionBody>
-
                       </CAccordionItem>
                       <CAccordionItem itemKey={3}>
                         <CAccordionHeader>III. MIEMBROS DE LA FAMILIA #3</CAccordionHeader>
@@ -355,21 +459,34 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               <h5>Persona {index + 1}</h5>
                               <CRow className="mb-3">
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`nombresApellidos-${index}`} className="required-label">15. Nombres y Apellidos</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`nombresApellidos-${index}`}
+                                    className="required-label"
+                                  >
+                                    15. Nombres y Apellidos
+                                  </CFormLabel>
                                   <CFormInput
                                     type="text"
                                     id={`nombresApellidos-${index}`}
                                     placeholder="Ingresa los nombres y apellidos"
                                     value={persona.nombresApellidos}
-                                    onChange={(e) => handlePersonaChange(index, 'nombresApellidos', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'nombresApellidos', e.target.value)
+                                    }
+                                    readOnly={modeRead}
                                   />
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`sexo-${index}`} className="required-label">16. Sexo</CFormLabel>
+                                  <CFormLabel htmlFor={`sexo-${index}`} className="required-label">
+                                    16. Sexo
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`sexo-${index}`}
                                     value={persona.sexo}
-                                    onChange={(e) => handlePersonaChange(index, 'sexo', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'sexo', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value="M">Masculino</option>
@@ -377,23 +494,36 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`edad-${index}`} className="required-label">17. Edad</CFormLabel>
+                                  <CFormLabel htmlFor={`edad-${index}`} className="required-label">
+                                    17. Edad
+                                  </CFormLabel>
                                   <CFormInput
                                     type="number"
                                     id={`edad-${index}`}
                                     placeholder="Ingresa la edad"
                                     value={persona.edad}
-                                    onChange={(e) => handlePersonaChange(index, 'edad', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'edad', e.target.value)
+                                    }
+                                    readOnly={modeRead}
                                   />
                                 </CCol>
                               </CRow>
                               <CRow className="mb-3">
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`tipoEdad-${index}`} className="required-label">Tipo de Edad</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`tipoEdad-${index}`}
+                                    className="required-label"
+                                  >
+                                    Tipo de Edad
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`tipoEdad-${index}`}
                                     value={persona.tipoEdad}
-                                    onChange={(e) => handlePersonaChange(index, 'tipoEdad', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'tipoEdad', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value="A">Años</option>
@@ -402,11 +532,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`estadoCivil-${index}`} className="required-label">18. Estado Civil</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`estadoCivil-${index}`}
+                                    className="required-label"
+                                  >
+                                    18. Estado Civil
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`estadoCivil-${index}`}
                                     value={persona.estadoCivil}
-                                    onChange={(e) => handlePersonaChange(index, 'estadoCivil', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'estadoCivil', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Soltero(a)</option>
@@ -418,11 +556,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`parentesco-${index}`} className="required-label">19. Parentesco(respecto a quien responde la encuesta)</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`parentesco-${index}`}
+                                    className="required-label"
+                                  >
+                                    19. Parentesco(respecto a quien responde la encuesta)
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`parentesco-${index}`}
                                     value={persona.parentesco}
-                                    onChange={(e) => handlePersonaChange(index, 'parentesco', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'parentesco', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Jefe(a)de familia</option>
@@ -436,11 +582,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               </CRow>
                               <CRow className="mb-3">
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`ocupacion-${index}`} className="required-label">20. Ocupación</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`ocupacion-${index}`}
+                                    className="required-label"
+                                  >
+                                    20. Ocupación
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`ocupacion-${index}`}
                                     value={persona.ocupacion}
-                                    onChange={(e) => handlePersonaChange(index, 'ocupacion', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'ocupacion', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Empleado</option>
@@ -453,11 +607,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`aportaIngresos-${index}`} className="required-label">21. Aporta ingresos económicos a la familia</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`aportaIngresos-${index}`}
+                                    className="required-label"
+                                  >
+                                    21. Aporta ingresos económicos a la familia
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`aportaIngresos-${index}`}
                                     value={persona.aportaIngresos}
-                                    onChange={(e) => handlePersonaChange(index, 'aportaIngresos', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'aportaIngresos', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Sí</option>
@@ -466,11 +628,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`nivelEscolaridad-${index}`} className="required-label">22. Nivel de Escolaridad</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`nivelEscolaridad-${index}`}
+                                    className="required-label"
+                                  >
+                                    22. Nivel de Escolaridad
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`nivelEscolaridad-${index}`}
                                     value={persona.nivelEscolaridad}
-                                    onChange={(e) => handlePersonaChange(index, 'nivelEscolaridad', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'nivelEscolaridad', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value={1}>Ninguno</option>
                                     <option value={2}>Primaria completa</option>
@@ -486,11 +656,23 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               </CRow>
                               <CRow className="mb-3">
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`tipoAfiliacionSalud-${index}`} className="required-label">23. Tipo afiliación en salud</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`tipoAfiliacionSalud-${index}`}
+                                    className="required-label"
+                                  >
+                                    23. Tipo afiliación en salud
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`tipoAfiliacionSalud-${index}`}
                                     value={persona.tipoAfiliacionSalud}
-                                    onChange={(e) => handlePersonaChange(index, 'tipoAfiliacionSalud', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(
+                                        index,
+                                        'tipoAfiliacionSalud',
+                                        e.target.value,
+                                      )
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Contributivo</option>
@@ -500,11 +682,23 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`grupoAtencionEspecial-${index}`} className="required-label">24. Grupo de atención especial</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`grupoAtencionEspecial-${index}`}
+                                    className="required-label"
+                                  >
+                                    24. Grupo de atención especial
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`grupoAtencionEspecial-${index}`}
                                     value={persona.grupoAtencionEspecial}
-                                    onChange={(e) => handlePersonaChange(index, 'grupoAtencionEspecial', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(
+                                        index,
+                                        'grupoAtencionEspecial',
+                                        e.target.value,
+                                      )
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Desplazado</option>
@@ -514,11 +708,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   </CFormSelect>
                                 </CCol>
                                 <CCol md={4}>
-                                  <CFormLabel htmlFor={`discapacidad-${index}`} className="required-label">25. Discapacidad</CFormLabel>
+                                  <CFormLabel
+                                    htmlFor={`discapacidad-${index}`}
+                                    className="required-label"
+                                  >
+                                    25. Discapacidad
+                                  </CFormLabel>
                                   <CFormSelect
                                     id={`discapacidad-${index}`}
                                     value={persona.discapacidad}
-                                    onChange={(e) => handlePersonaChange(index, 'discapacidad', e.target.value)}
+                                    onChange={(e) =>
+                                      handlePersonaChange(index, 'discapacidad', e.target.value)
+                                    }
+                                    disabled={isReadOnly}
                                   >
                                     <option value="">Seleccione opción</option>
                                     <option value={1}>Motora</option>
@@ -544,12 +746,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     {/* Pregunta 26 */}
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="haRecibidoAyuda" className="required-label">26. ¿Ha recibido algún tipo de ayuda o apoyo?</CFormLabel>
+                        <CFormLabel htmlFor="haRecibidoAyuda" className="required-label">
+                          26. ¿Ha recibido algún tipo de ayuda o apoyo?
+                        </CFormLabel>
                         <CFormSelect
                           id="haRecibidoAyuda"
                           name="haRecibidoAyuda"
                           value={formData.haRecibidoAyuda}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -558,13 +763,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                       </CCol>
 
                       <CCol md={6}>
-                        <CFormLabel htmlFor="nombreAyudaOrganizacion">26.1 Si, ¿de cuál organización?</CFormLabel>
+                        <CFormLabel htmlFor="nombreAyudaOrganizacion">
+                          26.1 Si, ¿de cuál organización?
+                        </CFormLabel>
                         <CFormInput
                           type="text"
                           id="nombreAyudaOrganizacion"
                           name="nombreAyudaOrganizacion"
                           value={formData.nombreAyudaOrganizacion}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -577,19 +785,23 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="tipoAyuda"
                           value={formData.tipoAyuda}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
                     {/* Pregunta 27 */}
                     <CRow className="mb-3">
                       <CCol md={12}>
-                        <CFormLabel htmlFor="principalNecesidad" className="required-label">27. ¿Cuál es la principal necesidad de su familia?</CFormLabel>
+                        <CFormLabel htmlFor="principalNecesidad" className="required-label">
+                          27. ¿Cuál es la principal necesidad de su familia?
+                        </CFormLabel>
                         <CFormInput
                           type="text"
                           id="principalNecesidad"
                           name="principalNecesidad"
                           value={formData.principalNecesidad}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -597,12 +809,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     {/* Pregunta 28 */}
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="haSidoDesplazado" className="required-label">28. ¿Ha sido desplazado por la violencia en los últimos 10 años?</CFormLabel>
+                        <CFormLabel htmlFor="haSidoDesplazado" className="required-label">
+                          28. ¿Ha sido desplazado por la violencia en los últimos 10 años?
+                        </CFormLabel>
                         <CFormSelect
                           id="haSidoDesplazado"
                           name="haSidoDesplazado"
                           value={formData.haSidoDesplazado}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -611,13 +826,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                       </CCol>
 
                       <CCol md={6}>
-                        <CFormLabel htmlFor="haceCuantoTiempoDesplazado">28.1 Si es sí, ¿Hace cuánto tiempo?</CFormLabel>
+                        <CFormLabel htmlFor="haceCuantoTiempoDesplazado">
+                          28.1 Si es sí, ¿Hace cuánto tiempo?
+                        </CFormLabel>
                         <CFormInput
                           type="text"
                           id="haceCuantoTiempoDesplazado"
                           name="haceCuantoTiempoDesplazado"
                           value={formData.haceCuantoTiempoDesplazado}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -631,24 +849,31 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="lugarDeDesplazado"
                           value={formData.lugarDeDesplazado}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
 
                     <CRow className="mb-3">
                       <CCol md={12}>
-                        <CFormLabel>Nota: En caso de haber respondido "No", por favor pase a la pregunta No: 33</CFormLabel>
+                        <CFormLabel>
+                          Nota: En caso de haber respondido "No", por favor pase a la pregunta No:
+                          33
+                        </CFormLabel>
                       </CCol>
                     </CRow>
 
                     <CRow className="mb-3">
-                    <CCol md={6}>
-                        <CFormLabel htmlFor="deseaVolverAlSitioDeDesplazado">29. ¿Desea volver al sitio de donde fue desplazado?</CFormLabel>
+                      <CCol md={6}>
+                        <CFormLabel htmlFor="deseaVolverAlSitioDeDesplazado">
+                          29. ¿Desea volver al sitio de donde fue desplazado?
+                        </CFormLabel>
                         <CFormSelect
                           id="deseaVolverAlSitioDeDesplazado"
                           name="deseaVolverAlSitioDeDesplazado"
                           value={formData.deseaVolverAlSitioDeDesplazado}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -664,6 +889,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="porqueSiNoDesea"
                           value={formData.porqueSiNoDesea}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -671,12 +897,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     {/* Pregunta 30 */}
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="haSidoRechazadoDespuesDeDesplazado">30. ¿Ha sido rechazado o discriminado después del desplazamiento?</CFormLabel>
+                        <CFormLabel htmlFor="haSidoRechazadoDespuesDeDesplazado">
+                          30. ¿Ha sido rechazado o discriminado después del desplazamiento?
+                        </CFormLabel>
                         <CFormSelect
                           id="haSidoRechazadoDespuesDeDesplazado"
                           name="haSidoRechazadoDespuesDeDesplazado"
                           value={formData.haSidoRechazadoDespuesDeDesplazado}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -686,7 +915,10 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     </CRow>
                     <CRow className="mb-3">
                       <CCol md={12}>
-                        <CFormLabel>31. ¿Qué cambios ha presentado la familia después del desplazamiento? (puede seleccionar varias opciones)</CFormLabel>
+                        <CFormLabel>
+                          31. ¿Qué cambios ha presentado la familia después del desplazamiento?
+                          (puede seleccionar varias opciones)
+                        </CFormLabel>
 
                         <CFormCheck
                           type="checkbox"
@@ -695,6 +927,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="a. Están más unidos"
                           checked={formData.desplazamiento.estanUnidos === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'desplazamiento')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -703,6 +936,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="b. Se desintegró la familia"
                           checked={formData.desplazamiento.desintegroFamilia === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'desplazamiento')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -711,6 +945,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="c. Hay problemas familiares"
                           checked={formData.desplazamiento.problemasFamiliares === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'desplazamiento')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -719,6 +954,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="d. Ningún cambio"
                           checked={formData.desplazamiento.ningunCambio === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'desplazamiento')}
+                          disabled={isReadOnly}
                         />
                       </CCol>
                     </CRow>
@@ -732,6 +968,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="afectadoConsecuenciaDesplazamiento"
                           value={formData.afectadoConsecuenciaDesplazamiento}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione una opción</option>
                           <option value={1}>Muy afectados</option>
@@ -750,6 +987,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="haSidoPositivoElDesplazamiento"
                           value={formData.haSidoPositivoElDesplazamiento}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione una opción</option>
                           <option value={1}>Muy positivo</option>
@@ -760,7 +998,10 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     </CRow>
                     <CRow className="mb-3">
                       <CCol md={12}>
-                        <CFormLabel className="required-label">34. ¿Qué lugar prefieren estar la mayor parte del tiempo? (puede seleccionar varias opciones)</CFormLabel>
+                        <CFormLabel className="required-label">
+                          34. ¿Qué lugar prefieren estar la mayor parte del tiempo? (puede
+                          seleccionar varias opciones)
+                        </CFormLabel>
                         <CFormCheck
                           type="checkbox"
                           id="sala"
@@ -768,6 +1009,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="a. En la sala"
                           checked={formData.tiempoCasa.sala === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoCasa')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -776,6 +1018,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="b. En la cocina"
                           checked={formData.tiempoCasa.cocina === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoCasa')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -784,6 +1027,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="c. En la habitación"
                           checked={formData.tiempoCasa.habitacion === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoCasa')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -792,6 +1036,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="d. Otro"
                           checked={formData.tiempoCasa.otro_34 === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoCasa')}
+                          disabled={isReadOnly}
                         />
                         <CFormInput
                           type="text"
@@ -801,6 +1046,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           value={formData.especifiqueOtro_34}
                           onChange={handleFormChange}
                           className="mt-2"
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -814,6 +1060,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="comoConsumenLosAlimentos"
                           value={formData.comoConsumenLosAlimentos}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione una opción</option>
                           <option value={1}>Reunidos en familia</option>
@@ -825,14 +1072,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     {/* Pregunta 36 */}
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="maltratoViolenciaEnLaFamilia" className="required-label">
-                          36. ¿Al interior de su familia se presentan o se han presentado casos de maltrato o violencia?
+                        <CFormLabel
+                          htmlFor="maltratoViolenciaEnLaFamilia"
+                          className="required-label"
+                        >
+                          36. ¿Al interior de su familia se presentan o se han presentado casos de
+                          maltrato o violencia?
                         </CFormLabel>
                         <CFormSelect
                           id="maltratoViolenciaEnLaFamilia"
                           name="maltratoViolenciaEnLaFamilia"
                           value={formData.maltratoViolenciaEnLaFamilia}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -845,13 +1097,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     <CRow className="mb-3">
                       <CCol md={6}>
                         <CFormLabel htmlFor="haPedidoAyudaDenunciado">
-                          37. En caso de responder Sí a la anterior pregunta, ¿Ha pedido ayuda o ha denunciado estos casos?
+                          37. En caso de responder Sí a la anterior pregunta, ¿Ha pedido ayuda o ha
+                          denunciado estos casos?
                         </CFormLabel>
                         <CFormSelect
                           id="haPedidoAyudaDenunciado"
                           name="haPedidoAyudaDenunciado"
                           value={formData.haPedidoAyudaDenunciado}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -868,6 +1122,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="haPedidoAyudaDenunciadoPorQue"
                           value={formData.haPedidoAyudaDenunciadoPorQue}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -875,7 +1130,10 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     {/* Pregunta 38 */}
                     <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="decisionesImportantesEnFamilia" className="required-label">
+                        <CFormLabel
+                          htmlFor="decisionesImportantesEnFamilia"
+                          className="required-label"
+                        >
                           38. ¿Cómo se toman las decisiones más importantes en su familia?
                         </CFormLabel>
                         <CFormSelect
@@ -883,6 +1141,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="decisionesImportantesEnFamilia"
                           value={formData.decisionesImportantesEnFamilia}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione una opción</option>
                           <option value={1}>Con diálogo</option>
@@ -892,15 +1151,14 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                         </CFormSelect>
                       </CCol>
                       <CCol md={6}>
-                        <CFormLabel htmlFor="decisionesFamilia">
-                          38. Otro. Especifique
-                        </CFormLabel>
+                        <CFormLabel htmlFor="decisionesFamilia">38. Otro. Especifique</CFormLabel>
                         <CFormInput
                           type="text"
                           id="decisionesFamilia"
                           name="decisionesFamilia"
                           value={formData.decisionesFamilia}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -916,6 +1174,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="seSienteAgustoEnLaVivienda"
                           value={formData.seSienteAgustoEnLaVivienda}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -932,6 +1191,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="seSienteAgustoEnLaViviendaPorQue"
                           value={formData.seSienteAgustoEnLaViviendaPorQue}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -947,6 +1207,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="necesitaCapacitarse"
                           value={formData.necesitaCapacitarse}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -963,6 +1224,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="necesitaCapacitarseEspecifique"
                           value={formData.necesitaCapacitarseEspecifique}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -978,6 +1240,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="emprenderNegocio"
                           value={formData.emprenderNegocio}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -994,6 +1257,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="emprenderNegocioEspecifique"
                           value={formData.emprenderNegocioEspecifique}
                           onChange={handleFormChange}
+                          readOnly={modeRead}
                         />
                       </CCol>
                     </CRow>
@@ -1002,13 +1266,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     <CRow className="mb-3">
                       <CCol md={6}>
                         <CFormLabel htmlFor="condicionesDeVida" className="required-label">
-                          42. ¿Cómo cree que serán las condiciones de vida de usted y su familia en un año?
+                          42. ¿Cómo cree que serán las condiciones de vida de usted y su familia en
+                          un año?
                         </CFormLabel>
                         <CFormSelect
                           id="condicionesDeVida"
                           name="condicionesDeVida"
                           value={formData.condicionesDeVida}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione una opción</option>
                           <option value={1}>Seguirán siendo iguales</option>
@@ -1029,6 +1295,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="fumaCigarrillo"
                           value={formData.fumaCigarrillo}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -1044,6 +1311,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="consumeLicor"
                           value={formData.consumeLicor}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -1063,6 +1331,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           name="consumeMedicamentos"
                           value={formData.consumeMedicamentos}
                           onChange={handleFormChange}
+                          disabled={isReadOnly}
                         >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
@@ -1076,7 +1345,8 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                     <CRow className="mb-3">
                       <CCol md={6}>
                         <CFormLabel className="required-label">
-                          45. ¿A qué dedica su familia el tiempo libre? (puede señalar varias opciones)
+                          45. ¿A qué dedica su familia el tiempo libre? (puede señalar varias
+                          opciones)
                         </CFormLabel>
                         <CFormCheck
                           type="checkbox"
@@ -1085,6 +1355,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="a. Hacer reuniones familiares"
                           checked={formData.tiempoLibre.reunionesFamiliares === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoLibre')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -1093,6 +1364,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="b. Paseos"
                           checked={formData.tiempoLibre.paseos === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoLibre')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -1101,6 +1373,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="c. Practicar algún tipo de deporte"
                           checked={formData.tiempoLibre.practicarDeporte === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoLibre')}
+                          disabled={isReadOnly}
                         />
                         <CFormCheck
                           type="checkbox"
@@ -1109,6 +1382,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           label="d. Otro"
                           checked={formData.tiempoLibre.otro_45 === 'S'}
                           onChange={(e) => handleCheckboxChange(e, 'tiempoLibre')}
+                          disabled={isReadOnly}
                         />
                         <CFormInput
                           type="text"
@@ -1118,6 +1392,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           value={formData.especifiqueOtro_45}
                           onChange={handleFormChange}
                           className="mt-2"
+                          disabled={isReadOnly}
                         />
                       </CCol>
                     </CRow>
@@ -1142,6 +1417,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="viviendaOcupada"
                                 value={formData.viviendaOcupada}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>1. Propia, totalmente pagada</option>
@@ -1164,6 +1440,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 value={formData.viviendaOcupadaEspecifique}
                                 onChange={handleFormChange}
                                 className="mt-2"
+                                readOnly={modeRead}
                               />
                               {/* )} */}
                             </CCol>
@@ -1178,6 +1455,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="loteViviendaLegal"
                                 value={formData.loteViviendaLegal}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
@@ -1186,13 +1464,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                48. ¿A qué estrato pertenece esta vivienda? (Solicite recibo de servicio público, si lo tiene)
+                                48. ¿A qué estrato pertenece esta vivienda? (Solicite recibo de
+                                servicio público, si lo tiene)
                               </CFormLabel>
                               <CFormSelect
                                 id="estratoVivienda"
                                 name="estratoVivienda"
                                 value={formData.estratoVivienda}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
                                 <option value={0}>Estrato 0</option>
@@ -1208,19 +1488,23 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                         </CAccordionBody>
                       </CAccordionItem>
                       <CAccordionItem itemKey={2}>
-                        <CAccordionHeader>II. CONDICIONES ECONOMICAS DE LA FAMILIA #2</CAccordionHeader>
+                        <CAccordionHeader>
+                          II. CONDICIONES ECONOMICAS DE LA FAMILIA #2
+                        </CAccordionHeader>
                         <CAccordionBody>
                           {/* Pregunta 49 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                49. ¿En su vivienda se realiza algún trabajo o negocio que genere ingresos económicos?
+                                49. ¿En su vivienda se realiza algún trabajo o negocio que genere
+                                ingresos económicos?
                               </CFormLabel>
                               <CFormSelect
                                 id="realizaTrabajoNegocioEnVivienda"
                                 name="realizaTrabajoNegocioEnVivienda"
                                 value={formData.realizaTrabajoNegocioEnVivienda}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
@@ -1239,6 +1523,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 value={formData.realizaTrabajoNegocioEnViviendaCual}
                                 onChange={handleFormChange}
                                 className="mt-2"
+                                readOnly={modeRead}
                               />
                               {/* )} */}
                             </CCol>
@@ -1254,16 +1539,20 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="ingresosMensualesPromedio"
                                 value={formData.ingresosMensualesPromedio}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
-                                <option value={1}>1. Menos de un Salario Mínimo Legal Vigente</option>
+                                <option value={1}>
+                                  1. Menos de un Salario Mínimo Legal Vigente
+                                </option>
                                 <option value={2}>2. 1 Salario Mínimo Legal Vigente</option>
                                 <option value={3}>3. Más de 1 Salario Mínimo Legal Vigente</option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                51. Mensualmente, ¿cuál es el promedio en gastos en servicios públicos en su familia?
+                                51. Mensualmente, ¿cuál es el promedio en gastos en servicios
+                                públicos en su familia?
                               </CFormLabel>
                               <CFormInput
                                 type="text"
@@ -1272,13 +1561,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 placeholder="Especifique el promedio de gastos"
                                 value={formData.gastosMensualesServicios}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
                         </CAccordionBody>
                       </CAccordionItem>
                       <CAccordionItem itemKey={3}>
-                        <CAccordionHeader>III. CONDICIONES DE ENTORNO Y DE VIVIENDA #3</CAccordionHeader>
+                        <CAccordionHeader>
+                          III. CONDICIONES DE ENTORNO Y DE VIVIENDA #3
+                        </CAccordionHeader>
                         <CAccordionBody>
                           {/* Pregunta 52 */}
                           <CRow className="mb-3">
@@ -1293,6 +1585,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Medios de transporte (Buses, autos, camiones, lanchas, etc.)"
                                 checked={formData.accesoVivienda.medioTransporte === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'accesoVivienda')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1301,6 +1594,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Centros sociales, culturales y/o recreacionales"
                                 checked={formData.accesoVivienda.centroSociales === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'accesoVivienda')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1309,12 +1603,15 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Parques, áreas deportivas y/o zonas verdes"
                                 checked={formData.accesoVivienda.parques === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'accesoVivienda')}
+                                disabled={isReadOnly}
                               />
                             </CCol>
 
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                53. ¿Cuánto tiempo promedio se gasta y cuál es la forma más frecuente en que se hace el desplazamiento desde su vivienda a la escuela o centro de estudio?
+                                53. ¿Cuánto tiempo promedio se gasta y cuál es la forma más
+                                frecuente en que se hace el desplazamiento desde su vivienda a la
+                                escuela o centro de estudio?
                               </CFormLabel>
                               <CFormCheck
                                 type="checkbox"
@@ -1323,6 +1620,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="A pie"
                                 checked={formData.tiempoDesplazamiento.apie === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1331,6 +1629,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="En bicicleta"
                                 checked={formData.tiempoDesplazamiento.bicicleta === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1339,6 +1638,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="En vehículo motorizado"
                                 checked={formData.tiempoDesplazamiento.vehiculoMotorizado === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1347,6 +1647,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="En Mula/caballo/burro"
                                 checked={formData.tiempoDesplazamiento.caballo === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1355,6 +1656,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Otro"
                                 checked={formData.tiempoDesplazamiento.otro_53 === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1363,6 +1665,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="No aplica"
                                 checked={formData.tiempoDesplazamiento.noAplica === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'tiempoDesplazamiento')}
+                                disabled={isReadOnly}
                               />
                               {/* {formData.otro && ( */}
                               <CFormInput
@@ -1373,6 +1676,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 value={formData.especifiqueOtro_53}
                                 onChange={handleFormChange}
                                 className="mt-2"
+                                readOnly={modeRead}
                               />
                               {/* // )} */}
                             </CCol>
@@ -1386,15 +1690,22 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="sitioPreparaAlimientos"
                                 name="sitioPreparaAlimientos"
                                 value={formData.sitioPreparaAlimientos}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
-                                <option value={1}>1. De uso exclusivo de las personas de la familia</option>
-                                <option value={2}>2. Compartida con personas de otras familias</option>
+                                <option value={1}>
+                                  1. De uso exclusivo de las personas de la familia
+                                </option>
+                                <option value={2}>
+                                  2. Compartida con personas de otras familias
+                                </option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                55. ¿Cuál combustible usan para cocinar? (puede señalar varias opciones)
+                                55. ¿Cuál combustible usan para cocinar? (puede señalar varias
+                                opciones)
                               </CFormLabel>
 
                               <CFormCheck
@@ -1404,6 +1715,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Electricidad"
                                 checked={formData.combustibleCocina.electricidad === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1412,6 +1724,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Gas propano en cilindro"
                                 checked={formData.combustibleCocina.gasPropano === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1420,6 +1733,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Gas natural conectado a red pública"
                                 checked={formData.combustibleCocina.gasNatural === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1428,6 +1742,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Leña, madera o carbón de leña"
                                 checked={formData.combustibleCocina.lena === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1436,6 +1751,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Petróleo, gasolina, kerosén, alcohol"
                                 checked={formData.combustibleCocina.petroleo === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1444,6 +1760,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Carbón mineral"
                                 checked={formData.combustibleCocina.carbonMineral === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1452,6 +1769,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Materiales de desecho"
                                 checked={formData.combustibleCocina.materiales === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'combustibleCocina')}
+                                disabled={isReadOnly}
                               />
                             </CCol>
                           </CRow>
@@ -1464,15 +1782,22 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="servicioSanitario"
                                 name="servicioSanitario"
                                 value={formData.servicioSanitario}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
-                                <option value={1}>1. De uso exclusivo de las personas de la familia</option>
-                                <option value={2}>2. Compartido con personas de otras familias</option>
+                                <option value={1}>
+                                  1. De uso exclusivo de las personas de la familia
+                                </option>
+                                <option value={2}>
+                                  2. Compartido con personas de otras familias
+                                </option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                57. ¿Cuáles de los siguientes servicios básicos domiciliarios tiene su vivienda?
+                                57. ¿Cuáles de los siguientes servicios básicos domiciliarios tiene
+                                su vivienda?
                               </CFormLabel>
                               <CFormCheck
                                 type="checkbox"
@@ -1481,6 +1806,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Energía eléctrica"
                                 checked={formData.serviciosBasicos.energiaElectrica === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1489,6 +1815,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Gas por tubería"
                                 checked={formData.serviciosBasicos.gasTuberia === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1497,6 +1824,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Acueducto"
                                 checked={formData.serviciosBasicos.acueducto === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1505,6 +1833,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Alcantarillado"
                                 checked={formData.serviciosBasicos.alcantarillado === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1513,6 +1842,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Teléfono"
                                 checked={formData.serviciosBasicos.telefono_57 === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                               <CFormCheck
                                 type="checkbox"
@@ -1521,6 +1851,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 label="Aseo"
                                 checked={formData.serviciosBasicos.aseo === 'S'}
                                 onChange={(e) => handleCheckboxChange(e, 'serviciosBasicos')}
+                                disabled={isReadOnly}
                               />
                             </CCol>
                           </CRow>
@@ -1534,23 +1865,25 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="conformeConServicios"
                                 name="conformeConServicios"
                                 value={formData.conformeConServicios}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel>
-                                58. ¿Por qué?
-                              </CFormLabel>
+                              <CFormLabel>58. ¿Por qué?</CFormLabel>
                               <CFormInput
                                 type="text"
                                 id="conformeConServiciosEspecifique"
                                 name="conformeConServiciosEspecifique"
                                 placeholder="¿Por qué?"
                                 value={formData.conformeConServiciosEspecifique}
-                                onChange={handleFormChange} />
+                                onChange={handleFormChange}
+                                readOnly={modeRead}
+                              />
                             </CCol>
                           </CRow>
                         </CAccordionBody>
@@ -1562,13 +1895,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           <CRow className="mb-3">
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                59. ¿De dónde toman principalmente el agua para consumir en la vivienda?
+                                59. ¿De dónde toman principalmente el agua para consumir en la
+                                vivienda?
                               </CFormLabel>
                               <CFormSelect
                                 id="fuenteAguaVivienda"
                                 name="fuenteAguaVivienda"
                                 value={formData.fuenteAguaVivienda}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>Acueducto público</option>
                                 <option value={2}>Acueducto comunal o veredal</option>
@@ -1583,16 +1919,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                             </CCol>
                             {/* Campo adicional para especificar otra fuente */}
                             <CCol md={6}>
-                              <CFormLabel>
-                                59. especificar otra
-                              </CFormLabel>
+                              <CFormLabel>59. especificar otra</CFormLabel>
                               <CFormInput
                                 type="text"
                                 id="fuenteAguaViviendaEspecifique"
                                 name="fuenteAguaViviendaEspecifique"
                                 placeholder="Especifique otra fuente de agua"
                                 value={formData.fuenteAguaViviendaEspecifique}
-                                onChange={handleFormChange} />
+                                onChange={handleFormChange}
+                                readOnly={modeRead}
+                              />
                             </CCol>
                           </CRow>
                           {/* Pregunta 60 */}
@@ -1605,7 +1941,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="obtieneAguaFormaRegular"
                                 name="obtieneAguaFormaRegular"
                                 value={formData.obtieneAguaFormaRegular}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>Permanente, es decir 24 horas al día </option>
                                 <option value={2}>Horario establecido</option>
@@ -1620,7 +1958,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="lavanFrutasVerduras"
                                 name="lavanFrutasVerduras"
                                 value={formData.lavanFrutasVerduras}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1638,7 +1978,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 id="enciendenVelasVelones"
                                 name="enciendenVelasVelones"
                                 value={formData.enciendenVelasVelones}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1646,13 +1988,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                63. ¿Es frecuente que haya humo dentro de la vivienda? (Por cigarrillo, leña, carbón, etc.)
+                                63. ¿Es frecuente que haya humo dentro de la vivienda? (Por
+                                cigarrillo, leña, carbón, etc.)
                               </CFormLabel>
                               <CFormSelect
                                 id="humoDentroVivienda"
                                 name="humoDentroVivienda"
                                 value={formData.humoDentroVivienda}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1663,13 +2008,16 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           <CRow className="mb-3">
                             <CCol md={6}>
                               <CFormLabel className="required-label">
-                                64. ¿Usted o alguien de la familia se ha accidentado o lesionado en el último año en la vivienda?
+                                64. ¿Usted o alguien de la familia se ha accidentado o lesionado en
+                                el último año en la vivienda?
                               </CFormLabel>
                               <CFormSelect
                                 id="accidentadoEnVivienda"
                                 name="accidentadoEnVivienda"
                                 value={formData.accidentadoEnVivienda}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1679,31 +2027,43 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                         </CAccordionBody>
                       </CAccordionItem>
                       <CAccordionItem itemKey={5}>
-                        <CAccordionHeader>V. SEGURIDAD Y ENTORNO DE LA VIVIENDA #5</CAccordionHeader>
+                        <CAccordionHeader>
+                          V. SEGURIDAD Y ENTORNO DE LA VIVIENDA #5
+                        </CAccordionHeader>
                         <CAccordionBody>
                           {/* Pregunta 65 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">65. Tipo de vivienda</CFormLabel>
+                              <CFormLabel className="required-label">
+                                65. Tipo de vivienda
+                              </CFormLabel>
                               <CFormSelect
                                 id="tipoVivienda"
                                 name="tipoVivienda"
                                 value={formData.tipoVivienda}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>Casa</option>
                                 <option value={2}>Apartamento</option>
                                 <option value={3}>Cuarto(s) en inquilinato</option>
-                                <option value={4}>Improvisada (carpa, refugio natural, plásticos, etc) </option>
+                                <option value={4}>
+                                  Improvisada (carpa, refugio natural, plásticos, etc){' '}
+                                </option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel className="required-label">66. ¿La vivienda es auto construida?</CFormLabel>
+                              <CFormLabel className="required-label">
+                                66. ¿La vivienda es auto construida?
+                              </CFormLabel>
                               <CFormSelect
                                 id="viviendaAutoConstruida"
                                 name="viviendaAutoConstruida"
                                 value={formData.viviendaAutoConstruida}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1713,125 +2073,163 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Pregunta 67 */}
                           <CRow className="mb-3">
                             <CCol md={12}>
-                              <CFormLabel className="required-label">67. Topografía del terreno: La vivienda está ubicada sobre un terreno (puede señalar varias opciones)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                67. Topografía del terreno: La vivienda está ubicada sobre un
+                                terreno (puede señalar varias opciones)
+                              </CFormLabel>
                               <CFormCheck
                                 type="checkbox"
                                 id="plano"
                                 name="plano"
                                 label="a. Plano"
                                 checked={formData.topografiaTerreno.plano === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="ladera"
                                 name="ladera"
                                 label="b. Ladera"
                                 checked={formData.topografiaTerreno.ladera === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="relleno"
                                 name="relleno"
                                 label="c. Relleno"
                                 checked={formData.topografiaTerreno.relleno === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="irregular"
                                 name="irregular"
                                 label="d. Irregular"
                                 checked={formData.topografiaTerreno.irregular === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="inundable"
                                 name="inundable"
                                 label="e. Inundable"
                                 checked={formData.topografiaTerreno.inundable === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="deslizamiento"
                                 name="deslizamiento"
                                 label="f. Deslizamiento"
                                 checked={formData.topografiaTerreno.deslizamiento === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')} />
+                                onChange={(e) => handleCheckboxChange(e, 'topografiaTerreno')}
+                                disabled={isReadOnly}
+                              />
                             </CCol>
                           </CRow>
 
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">68. Observe si cerca de la vivienda hay: (puede señalar varias opciones)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                68. Observe si cerca de la vivienda hay: (puede señalar varias
+                                opciones)
+                              </CFormLabel>
                               <CFormCheck
                                 type="checkbox"
                                 id="terrenoBaldios"
                                 name="terrenoBaldios"
                                 label="1. Terrenos baldíos"
                                 checked={formData.lugaresVivienda.terrenoBaldios === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="plagas"
                                 name="plagas"
                                 label="2. Plagas: roedores, cucarachas, zancudos, moscas, etc."
                                 checked={formData.lugaresVivienda.plagas === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="industria"
                                 name="industria"
                                 label="3. Industrias contaminantes"
                                 checked={formData.lugaresVivienda.industria === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="porquerizas"
                                 name="porquerizas"
                                 label="4. Porquerizas"
                                 checked={formData.lugaresVivienda.porquerizas === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="malosOlores"
                                 name="malosOlores"
                                 label="5. Malos olores"
                                 checked={formData.lugaresVivienda.malosOlores === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="rellenos"
                                 name="rellenos"
                                 label="6. Rellenos sanitarios/botaderos"
                                 checked={formData.lugaresVivienda.rellenos === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="contaminacionAuditiva"
                                 name="contaminacionAuditiva"
                                 label="7. Contaminación auditiva"
                                 checked={formData.lugaresVivienda.contaminacionAuditiva === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="contaminacionVisual"
                                 name="contaminacionVisual"
                                 label="8. Contaminación visual"
                                 checked={formData.lugaresVivienda.contaminacionVisual === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="rio"
                                 name="rio"
                                 label="9. Río o quebrada"
                                 checked={formData.lugaresVivienda.rio === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                               <CFormCheck
                                 type="checkbox"
                                 id="especifique"
                                 name="especifique"
                                 label="10. Otro"
                                 checked={formData.lugaresVivienda.especifique === 'S'}
-                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')} />
+                                onChange={(e) => handleCheckboxChange(e, 'lugaresVivienda')}
+                                disabled={isReadOnly}
+                              />
                             </CCol>
                             <CCol md={6}>
                               <CFormLabel>68. Especifique Otro</CFormLabel>
@@ -1842,17 +2240,24 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 placeholder="Especifique"
                                 value={formData.especifiqueOtro_68}
                                 onChange={handleFormChange}
-                                className="mt-2" />
+                                className="mt-2"
+                                readOnly={modeRead}
+                              />
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">69. ¿Cerca de la vivienda hay zonas recreativas, zonas verdes y/o de esparcimiento?</CFormLabel>
+                              <CFormLabel className="required-label">
+                                69. ¿Cerca de la vivienda hay zonas recreativas, zonas verdes y/o de
+                                esparcimiento?
+                              </CFormLabel>
                               <CFormSelect
                                 id="zonasRecreativas"
                                 name="zonasRecreativas"
                                 value={formData.zonasRecreativas}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1867,35 +2272,54 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Pregunta 70 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">70. Pisos: ¿cuál es el material predominante del piso? (Señale una sola opción)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                70. Pisos: ¿cuál es el material predominante del piso? (Señale una
+                                sola opción)
+                              </CFormLabel>
                               <CFormSelect
                                 id="materialPredominantePiso"
                                 name="materialPredominantePiso"
                                 value={formData.materialPredominantePiso}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
-                                <option value="1">Liso e impermeable (cemento, baldosa, ladrillo, tableta, granito)</option>
+                                <option value="1">
+                                  Liso e impermeable (cemento, baldosa, ladrillo, tableta, granito)
+                                </option>
                                 <option value="2">Madera burda, tabla, tablón, otro vegetal</option>
                                 <option value="3">Madera pulida</option>
-                                <option value="4">Material plástico (vinilo, otro material sintético)</option>
+                                <option value="4">
+                                  Material plástico (vinilo, otro material sintético)
+                                </option>
                                 <option value="5">Lámina</option>
                                 <option value="6">Esterilla</option>
                                 <option value="7">Tierra, arena</option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel className="required-label">71. Paredes: ¿cuál es el material predominante de las paredes? (Señale una sola opción)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                71. Paredes: ¿cuál es el material predominante de las paredes?
+                                (Señale una sola opción)
+                              </CFormLabel>
                               <CFormSelect
                                 id="materialPredominanteParedes"
                                 name="materialPredominanteParedes"
                                 value={formData.materialPredominanteParedes}
                                 onChange={handleFormChange}
+                                disabled={isReadOnly}
                               >
                                 <option value="">Seleccione una opción</option>
-                                <option value={1}>Impermeable (cemento, bloque, ladrillo, piedra)</option>
-                                <option value={2}>Bahareque/Barro, tapia pisada, esterilla, caña, otro tipo de Material vegetal</option>
-                                <option value={3}>Madera pulida, Madera burda (tabla, tablón), Guadua</option>
+                                <option value={1}>
+                                  Impermeable (cemento, bloque, ladrillo, piedra)
+                                </option>
+                                <option value={2}>
+                                  Bahareque/Barro, tapia pisada, esterilla, caña, otro tipo de
+                                  Material vegetal
+                                </option>
+                                <option value={3}>
+                                  Madera pulida, Madera burda (tabla, tablón), Guadua
+                                </option>
                                 <option value={4}>Otro. Especifique</option>
                                 <option value={5}>No tiene</option>
                               </CFormSelect>
@@ -1908,6 +2332,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 value={formData.materialPredominanteParedesEspecifique}
                                 onChange={handleFormChange}
                                 className="mt-2"
+                                readOnly={modeRead}
                               />
                               {/* // )} */}
                             </CCol>
@@ -1916,12 +2341,17 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Pregunta 72 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">72. Techo: ¿cuál es el material predominante del techo? (Señale una sola opción)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                72. Techo: ¿cuál es el material predominante del techo? (Señale una
+                                sola opción)
+                              </CFormLabel>
                               <CFormSelect
                                 id="materialPredominanteTecho"
                                 name="materialPredominanteTecho"
                                 value={formData.materialPredominanteTecho}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>Concreto</option>
                                 <option value={2}>Tejas de barro</option>
@@ -1934,7 +2364,10 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={12}>
-                              <CFormLabel className="required-label">73. La vivienda tiene los siguientes ambientes separados? (Conteste Sí, No o NA)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                73. La vivienda tiene los siguientes ambientes separados? (Conteste
+                                Sí, No o NA)
+                              </CFormLabel>
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
@@ -1945,7 +2378,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="cocina_73"
                                 value={formData.cocina_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1953,13 +2388,17 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               </CFormSelect>
                             </CCol>
                             <CCol md={4}>
-                              <CFormLabel htmlFor="dormitorioAdulto_73">b. Dormitorio adultos</CFormLabel>
+                              <CFormLabel htmlFor="dormitorioAdulto_73">
+                                b. Dormitorio adultos
+                              </CFormLabel>
                               <CFormSelect
                                 id="dormitorioAdulto_73"
                                 name="dormitorioAdulto_73"
                                 value={formData.dormitorioAdulto_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1973,7 +2412,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="sala_73"
                                 value={formData.sala_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -1983,13 +2424,17 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           </CRow>
                           <CRow className="mb-3">
                             <CCol md={4}>
-                              <CFormLabel htmlFor="dormitorioNinos_73">d. Dormitorio niños</CFormLabel>
+                              <CFormLabel htmlFor="dormitorioNinos_73">
+                                d. Dormitorio niños
+                              </CFormLabel>
                               <CFormSelect
                                 id="dormitorioNinos_73"
                                 name="dormitorioNinos_73"
                                 value={formData.dormitorioNinos_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2003,7 +2448,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="sanitario_73"
                                 value={formData.sanitario_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2017,7 +2464,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="lavadero_73"
                                 value={formData.lavadero_73}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2028,17 +2477,31 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Pregunta 74 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">74. ¿De cuántos cuartos o piezas dormitorio dispone este hogar?</CFormLabel>
+                              <CFormLabel className="required-label">
+                                74. ¿De cuántos cuartos o piezas dormitorio dispone este hogar?
+                              </CFormLabel>
                               <CFormInput
                                 type="number"
                                 id="numeroCuartosHogar"
                                 name="numeroCuartosHogar"
                                 value={formData.numeroCuartosHogar}
-                                onChange={handleFormChange} />
+                                onChange={handleFormChange}
+                                readOnly={modeRead}
+                              />
                             </CCol>
                             <CCol md={12}>
-                              <CFormLabel className="required-label">75. Observe en dónde duermen las personas de la vivienda: (Puede señalar varias opciones)</CFormLabel>
-                              {['cama', 'estera', 'camasinColchon', 'hamaca', 'colchon', 'otro_75'].map((field, index) => (
+                              <CFormLabel className="required-label">
+                                75. Observe en dónde duermen las personas de la vivienda: (Puede
+                                señalar varias opciones)
+                              </CFormLabel>
+                              {[
+                                'cama',
+                                'estera',
+                                'camasinColchon',
+                                'hamaca',
+                                'colchon',
+                                'otro_75',
+                              ].map((field, index) => (
                                 <CFormCheck
                                   key={index}
                                   type="checkbox"
@@ -2046,7 +2509,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                   name={field}
                                   label={field === 'otro_75' ? 'otro' : field}
                                   checked={formData.duermenVivienda[field] === 'S'}
-                                  onChange={(e) => handleCheckboxChange(e, 'duermenVivienda')} />
+                                  onChange={(e) => handleCheckboxChange(e, 'duermenVivienda')}
+                                  disabled={isReadOnly}
+                                />
                               ))}
                               {/* Campo adicional para especificar */}
                               {/* {formData.otro && ( */}
@@ -2058,6 +2523,7 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 value={formData.cualOtro_75}
                                 onChange={handleFormChange}
                                 className="mt-2"
+                                readOnly={modeRead}
                               />
                               {/* )} */}
                             </CCol>
@@ -2065,20 +2531,26 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Pregunta 76 */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel className="required-label">76. ¿Cuántas camas hay en la vivienda?</CFormLabel>
+                              <CFormLabel className="required-label">
+                                76. ¿Cuántas camas hay en la vivienda?
+                              </CFormLabel>
                               <CFormInput
                                 type="number"
                                 id="numeroCamasVivienda"
                                 name="numeroCamasVivienda"
                                 value={formData.numeroCamasVivienda}
                                 onChange={handleFormChange}
+                                readOnly={modeRead}
                               />
                             </CCol>
                           </CRow>
                           {/* Pregunta 77 */}
                           <CRow className="mb-3">
                             <CCol md={12}>
-                              <CFormLabel className="required-label">77. ¿La casa cuenta con los siguientes elementos por separado? (Conteste Sí, No o NA)</CFormLabel>
+                              <CFormLabel className="required-label">
+                                77. ¿La casa cuenta con los siguientes elementos por separado?
+                                (Conteste Sí, No o NA)
+                              </CFormLabel>
                             </CCol>
                           </CRow>
                           <CRow className="mb-3">
@@ -2089,7 +2561,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="lavamanos_77"
                                 value={formData.lavamanos_77}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2101,7 +2575,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="lavaplatos_77"
                                 value={formData.lavaplatos_77}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2113,7 +2589,9 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                                 name="lavaRopa_77"
                                 value={formData.lavaRopa_77}
                                 onChange={handleFormChange}
-                                className="mb-2">
+                                className="mb-2"
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2129,15 +2607,24 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Preguntas 78 y 79 (primera fila) */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="lugarDisponenExcretas" className="required-label">78. Observe en dónde se disponen las excretas (heces)</CFormLabel>
+                              <CFormLabel
+                                htmlFor="lugarDisponenExcretas"
+                                className="required-label"
+                              >
+                                78. Observe en dónde se disponen las excretas (heces)
+                              </CFormLabel>
                               <CFormSelect
                                 id="lugarDisponenExcretas"
                                 name="lugarDisponenExcretas"
                                 value={formData.lugarDisponenExcretas}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>1. Inodoro conectado a alcantarillado</option>
-                                <option value={2}>2. Inodoro conectado a pozo séptico o sumidero</option>
+                                <option value={2}>
+                                  2. Inodoro conectado a pozo séptico o sumidero
+                                </option>
                                 <option value={3}>3. Inodoro con descarga al aire libre</option>
                                 <option value={4}>4. Letrina o sumidero</option>
                                 <option value={5}>5. Campo abierto</option>
@@ -2145,12 +2632,19 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                             </CCol>
 
                             <CCol md={6}>
-                              <CFormLabel htmlFor="numeroSanitariosHogar" className="required-label">79. ¿Cuántos inodoros o sanitarios de arrastre tiene este hogar?</CFormLabel>
+                              <CFormLabel
+                                htmlFor="numeroSanitariosHogar"
+                                className="required-label"
+                              >
+                                79. ¿Cuántos inodoros o sanitarios de arrastre tiene este hogar?
+                              </CFormLabel>
                               <CFormSelect
                                 id="numeroSanitariosHogar"
                                 name="numeroSanitariosHogar"
                                 value={formData.numeroSanitariosHogar}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value={1}>1. Ninguno</option>
                                 <option value={2}>2. Uno</option>
@@ -2163,26 +2657,40 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           {/* Preguntas 80 y 81 (segunda fila) */}
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="lugarSanitario" className="required-label">80. ¿Dónde se encuentra el sanitario, inodoro o letrina que usan las personas de esta familia?</CFormLabel>
+                              <CFormLabel htmlFor="lugarSanitario" className="required-label">
+                                80. ¿Dónde se encuentra el sanitario, inodoro o letrina que usan las
+                                personas de esta familia?
+                              </CFormLabel>
                               <CFormSelect
                                 id="lugarSanitario"
                                 name="lugarSanitario"
                                 value={formData.lugarSanitario}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="a">a. Fuera de la casa</option>
-                                <option value="b">b. Dentro de la casa, pero fuera del área habitada (patio o solar)</option>
+                                <option value="b">
+                                  b. Dentro de la casa, pero fuera del área habitada (patio o solar)
+                                </option>
                                 <option value="c">c. Dentro de la casa</option>
                                 <option value="d">d. No aplica</option>
                               </CFormSelect>
                             </CCol>
                             <CCol md={6}>
-                              <CFormLabel htmlFor="lavamanosCercaSanitario" className="required-label">81. ¿El lavamanos se encuentra cerca del sanitario?</CFormLabel>
+                              <CFormLabel
+                                htmlFor="lavamanosCercaSanitario"
+                                className="required-label"
+                              >
+                                81. ¿El lavamanos se encuentra cerca del sanitario?
+                              </CFormLabel>
                               <CFormSelect
                                 id="lavamanosCercaSanitario"
                                 name="lavamanosCercaSanitario"
                                 value={formData.lavamanosCercaSanitario}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="S">Si</option>
                                 <option value="N">No</option>
@@ -2193,16 +2701,22 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                         </CAccordionBody>
                       </CAccordionItem>
                       <CAccordionItem itemKey={8}>
-                        <CAccordionHeader>VIII. MANEJO DE BASURAS Y RESIDUOS SÓLIDOS EN LA VIVIENDA #8</CAccordionHeader>
+                        <CAccordionHeader>
+                          VIII. MANEJO DE BASURAS Y RESIDUOS SÓLIDOS EN LA VIVIENDA #8
+                        </CAccordionHeader>
                         <CAccordionBody>
                           <CRow className="mb-3">
                             <CCol md={6}>
-                              <CFormLabel htmlFor="recogenBasura" className="required-label">82. Recogen la basura en:</CFormLabel>
+                              <CFormLabel htmlFor="recogenBasura" className="required-label">
+                                82. Recogen la basura en:
+                              </CFormLabel>
                               <CFormSelect
                                 id="recogenBasura"
                                 name="recogenBasura"
                                 value={formData.recogenBasura}
-                                onChange={handleFormChange}>
+                                onChange={handleFormChange}
+                                disabled={isReadOnly}
+                              >
                                 <option value="">Seleccione una opción</option>
                                 <option value="1">1. Recipientes con tapa</option>
                                 <option value="2">2. Recipientes sin tapa</option>
@@ -2212,35 +2726,59 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                           </CRow>
                           <CAccordion>
                             <CAccordionItem itemKey={100}>
-                              <CAccordionHeader>DATOS DE SEGUIMIENTO EN EL HOGAR #1</CAccordionHeader>
+                              <CAccordionHeader>
+                                DATOS DE SEGUIMIENTO EN EL HOGAR #1
+                              </CAccordionHeader>
                               <CAccordionBody>
                                 <CRow className="mb-3">
                                   <CCol md={6}>
-                                    <CFormLabel htmlFor="nombreCompletoSeguimientoHogar" className="required-label">83. Nombre completo de la persona:</CFormLabel>
+                                    <CFormLabel
+                                      htmlFor="nombreCompletoSeguimientoHogar"
+                                      className="required-label"
+                                    >
+                                      83. Nombre completo de la persona:
+                                    </CFormLabel>
                                     <CFormInput
                                       type="text"
                                       id="nombreCompletoSeguimientoHogar"
                                       name="nombreCompletoSeguimientoHogar"
                                       value={formData.nombreCompletoSeguimientoHogar}
-                                      onChange={handleFormChange} />
+                                      onChange={handleFormChange}
+                                      readOnly={modeRead}
+                                    />
                                   </CCol>
                                   <CCol md={6}>
-                                    <CFormLabel htmlFor="direccionViviendaSeguimientoHogar" className="required-label">84. Dirección o nombre de la finca o vivienda donde vive la persona: barrio o vereda</CFormLabel>
+                                    <CFormLabel
+                                      htmlFor="direccionViviendaSeguimientoHogar"
+                                      className="required-label"
+                                    >
+                                      84. Dirección o nombre de la finca o vivienda donde vive la
+                                      persona: barrio o vereda
+                                    </CFormLabel>
                                     <CFormInput
                                       type="text"
                                       id="direccionViviendaSeguimientoHogar"
                                       name="direccionViviendaSeguimientoHogar"
                                       value={formData.direccionViviendaSeguimientoHogar}
-                                      onChange={handleFormChange} />
+                                      onChange={handleFormChange}
+                                      readOnly={modeRead}
+                                    />
                                   </CCol>
                                   <CCol md={6}>
-                                    <CFormLabel htmlFor="telefonoViviendaSeguimientoHogar" className="required-label">84. Teléfono:</CFormLabel>
+                                    <CFormLabel
+                                      htmlFor="telefonoViviendaSeguimientoHogar"
+                                      className="required-label"
+                                    >
+                                      84. Teléfono:
+                                    </CFormLabel>
                                     <CFormInput
                                       type="text"
                                       id="telefonoViviendaSeguimientoHogar"
                                       name="telefonoViviendaSeguimientoHogar"
                                       value={formData.telefonoViviendaSeguimientoHogar}
-                                      onChange={handleFormChange} />
+                                      onChange={handleFormChange}
+                                      readOnly={modeRead}
+                                    />
                                   </CCol>
                                 </CRow>
                               </CAccordionBody>
@@ -2250,13 +2788,17 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                               <CAccordionBody>
                                 <CRow className="mb-3">
                                   <CCol md={122}>
-                                    <CFormLabel htmlFor="observacionesEncuestador">Observaciones del encuestador:</CFormLabel>
+                                    <CFormLabel htmlFor="observacionesEncuestador">
+                                      Observaciones del encuestador:
+                                    </CFormLabel>
                                     <CFormTextarea
                                       id="observacionesEncuestador"
                                       name="observacionesEncuestador"
                                       rows="4"
                                       value={formData.observacionesEncuestador}
-                                      onChange={handleFormChange} />
+                                      onChange={handleFormChange}
+                                      readOnly={modeRead}
+                                    />
                                   </CCol>
                                 </CRow>
                               </CAccordionBody>
@@ -2270,59 +2812,77 @@ const FormControl = ({ readOnly = false, initialValues = {} }) => {
                 <CAccordionItem itemKey={6}>
                   <CAccordionHeader>E. TRATAMIENTO DE DATOS PERSONALES #6</CAccordionHeader>
                   <CAccordionBody>
-				            <CRow className="mb-3">
+                    <CRow className="mb-3">
                       <CCol md={6}>
-                        <CFormLabel htmlFor="autorizacionTratamientoDatos" className="required-label">85. ¿Autoriza el tratamiento de datos personales?</CFormLabel>
+                        <CFormLabel
+                          htmlFor="autorizacionTratamientoDatos"
+                          className="required-label"
+                        >
+                          85. ¿Autoriza el tratamiento de datos personales?
+                        </CFormLabel>
                         <CFormSelect
                           id="autorizacionTratamientoDatos"
                           name="autorizacionTratamientoDatos"
                           value={formData.autorizacionTratamientoDatos}
-                          onChange={handleFormChange}>
+                          onChange={handleFormChange}
+                          disabled={isReadOnly}
+                        >
                           <option value="">Seleccione opción</option>
                           <option value="N">No</option>
                           <option value="S">Sí</option>
                         </CFormSelect>
-                       </CCol>
-                          <CCol md={6}>
-                            <CFormLabel>85. Seleccione el archivo PDF</CFormLabel>
-                            <CFormInput
-                              type="file"
-                              id="formFile"
-                              name="formFile" />
-                          </CCol>
-                        </CRow>
-					             <CRow className="mb-3">
-                          <CCol md={6}>
-                            <CFormLabel htmlFor="autorizacionUsoImagen" className="required-label">86. ¿Autoriza el uso de imagen?</CFormLabel>
-                            <CFormSelect
-                              id="autorizacionUsoImagen"
-                              name="autorizacionUsoImagen"
-                              value={formData.autorizacionUsoImagen}
-                              onChange={handleFormChange} >
-                              <option value="">Seleccione opción</option>
-                              <option value="N">No</option>
-                              <option value="S">Sí</option>
-                            </CFormSelect>
-                          </CCol>
-                          <CCol md={6}>
-                            <CFormLabel>86. Seleccione el archivo PDF</CFormLabel>
-                            <CFormInput
-                              type="file"
-                              id="formFile2"
-                              name="formFile2" />
-                          </CCol>
-                        </CRow>
-				        </CAccordionBody>
+                      </CCol>
+                      <CCol md={6}>
+                        <CFormLabel>85. Seleccione el archivo PDF</CFormLabel>
+                        <CFormInput type="file" id="formFile" name="formFile" />
+                      </CCol>
+                    </CRow>
+                    <CRow className="mb-3">
+                      <CCol md={6}>
+                        <CFormLabel htmlFor="autorizacionUsoImagen" className="required-label">
+                          86. ¿Autoriza el uso de imagen?
+                        </CFormLabel>
+                        <CFormSelect
+                          id="autorizacionUsoImagen"
+                          name="autorizacionUsoImagen"
+                          value={formData.autorizacionUsoImagen}
+                          onChange={handleFormChange}
+                          disabled={isReadOnly}
+                        >
+                          <option value="">Seleccione opción</option>
+                          <option value="N">No</option>
+                          <option value="S">Sí</option>
+                        </CFormSelect>
+                      </CCol>
+                      <CCol md={6}>
+                        <CFormLabel>86. Seleccione el archivo PDF</CFormLabel>
+                        <CFormInput type="file" id="formFile2" name="formFile2" />
+                      </CCol>
+                    </CRow>
+                  </CAccordionBody>
                 </CAccordionItem>
               </CAccordion>
-              <CButton color="primary" onClick={ !readOnly ? handleSave : undefined }>
+              <CButton
+                className={`btn ${isSaveDisabled ? 'btn-secondary' : 'btn-primary'}`}
+                onClick={handleSave}
+                disabled={isSaveDisabled}>
+               <FaSave className="mr-2" />
                 Guardar
               </CButton>
+              <CRow className="mb-3">
+                  <CCol md={12}>
+                        {/* {message && (
+                      <div className="alert alert-success mt-3" role="alert">
+                        {message}
+                      </div>
+                  )} */}
+                  </CCol>
+              </CRow>
             </CForm>
           </CCardBody>
         </CCard>
       </CCol>
-    </CRow >
+    </CRow>
   )
 }
 

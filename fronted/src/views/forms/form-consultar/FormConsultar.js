@@ -20,7 +20,8 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import { initialFormData } from '../form-control/initialFormData'
-import FormControl from '../form-control/FormControl';
+import FormControl from '../form-control/FormControl'
+import { FaSearch, FaEraser } from 'react-icons/fa';
 
 const FormConsultar = () => {
 
@@ -28,27 +29,32 @@ const FormConsultar = () => {
 
   // Estado para almacenar el resto de los datos del formulario
   const [formData, setFormData] = useState(initialFormData)
-
   const [error, setError] = useState(null)
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [isSaveDisabled, setIsSaveDisabled] = useState(true);
 
   const handleInputChange = (e) => {
     setIdentificacion(e.target.value)
   }
 
+  const handleClear = () => {
+    setIdentificacion('');
+    setFormData(initialFormData);
+    setError(null);
+    setMostrarFormulario(false);
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault()
     setError(null)
     setFormData(null)
-
-
     try {
-      const respose = await axios.get( `http://localhost:3001/caracterizacion/${ identificacion }` );
-      console.log('===================================');
-      console.log('Se muestran los datos del beneficiario');
-      console.log(respose);
-      console.log('===================================');
-      setFormData(respose.data);
+      const respose = await axios.get(`http://localhost:3001/caracterizacion/${identificacion}`)
+      setFormData(respose.data)
+      setMostrarFormulario(true)
     } catch (err) {
+      setFormData({})
+      setMostrarFormulario(false)
       setError('No se encontró el beneficiario con la identificación proporcionada')
     }
   }
@@ -78,24 +84,36 @@ const FormConsultar = () => {
                           placeholder="Ingrese la identificación"
                           value={identificacion}
                           onChange={handleInputChange}
+                          className="mb-2"
                         />
                       </CCol>
-                      <CCol md={6}>
-                        <CButton color="primary" onClick={handleSearch}>
+                      <CCol md={12}>
+                        <CButton
+                          color="primary"
+                          onClick={handleSearch}>
+                        <FaSearch className="mr-2"  />
                           Buscar
                         </CButton>
-                      </CCol>
+                        <CButton
+                          color="danger"
+                          className="ml-2"
+                          onClick={handleClear}>
+                        <FaEraser className="mr-2" />
+                        Limpiar
+                      </CButton>
+                    </CCol>
                     </CRow>
                     <CRow className="mb-3">
-                    <CCol md={12}>
-                      {error && <CAlert color="danger">{error}</CAlert>}
-
-                      {/* Uso el Componente Ingresar dentro del Componente Consultar */}
-                      {formData && (
-                        <FormControl readOnly={true} initialValues={formData} />
-                      )}
-
-                    </CCol>
+                      <CCol md={12}>
+                        {error && <CAlert color="danger">{error}</CAlert>}
+                        {mostrarFormulario && (
+                          <FormControl
+                           modeReadOnly={true}
+                           modeData={formData}
+                           isReadOnly={true}
+                           isSaveDisabled={isSaveDisabled} />
+                        )}
+                      </CCol>
                     </CRow>
                   </CAccordionBody>
                 </CAccordionItem>
